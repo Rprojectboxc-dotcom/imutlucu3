@@ -1,0 +1,1829 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IP Master - Game Edukasi Jaringan Komputer</title>
+    <style>
+        :root {
+            /* Default Theme: Pastel Purple */
+            --primary: #6c5ce7;
+            --primary-light: #a29bfe;
+            --secondary: #fd79a8;
+            --accent: #00b894;
+            --warning: #fdcb6e;
+            --danger: #d63031;
+            --gold: #f1c40f;
+            --bg-color: #f0f3f8;
+            --card-bg: #ffffff;
+            --text-dark: #2d3436;
+            --text-muted: #636e72;
+            --border-radius: 20px;
+            --shadow: 0 10px 30px rgba(108, 92, 231, 0.15);
+            --water-bg: #e0f7fa;
+            --pad-bg: #2aeb9f;
+        }
+
+        /* Color Palettes */
+        body.theme-ocean {
+            --primary: #0083b0;
+            --primary-light: #00b4db;
+            --secondary: #e056fd;
+            --accent: #00d2d3;
+            --bg-color: #e6f7ff;
+            --shadow: 0 10px 30px rgba(0, 180, 219, 0.2);
+            --water-bg: #b3ebd9;
+        }
+
+        body.theme-matcha {
+            --primary: #2e7d32;
+            --primary-light: #81c784;
+            --secondary: #ff8f00;
+            --accent: #4caf50;
+            --bg-color: #f1f8e9;
+            --shadow: 0 10px 30px rgba(76, 175, 80, 0.2);
+            --water-bg: #c8e6c9;
+        }
+
+        body.theme-sunset {
+            --primary: #e67e22;
+            --primary-light: #f39c12;
+            --secondary: #e84393;
+            --accent: #2ecc71;
+            --bg-color: #fff5eb;
+            --shadow: 0 10px 30px rgba(230, 126, 34, 0.2);
+            --water-bg: #ffe0b2;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Comic Sans MS', 'Fredoka', 'Quicksand', 'Segoe UI', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(162, 155, 254, 0.2) 0%, transparent 20%),
+                radial-gradient(circle at 90% 80%, rgba(253, 121, 168, 0.2) 0%, transparent 20%),
+                radial-gradient(#a29bfe 1px, transparent 1px);
+            background-size: 100% 100%, 100% 100%, 24px 24px;
+            color: var(--text-dark);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            transition: background 0.3s ease;
+        }
+
+        /* Container Main Box */
+        .game-container {
+            width: 100%;
+            max-width: 720px;
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            border: 4px solid var(--primary-light);
+            padding: 24px;
+            position: relative;
+            overflow: hidden;
+            margin: auto;
+        }
+
+        /* Top Bar Utilities (Sound & Theme Selector) */
+        .top-utilities {
+            position: absolute;
+            top: 12px;
+            right: 15px;
+            display: flex;
+            gap: 8px;
+            z-index: 20;
+        }
+
+        .icon-btn {
+            background: #ffffff;
+            border: 2px solid var(--primary-light);
+            border-radius: 50%;
+            width: 36px;
+            height: 36px;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            transition: all 0.2s ease;
+        }
+
+        .icon-btn:hover {
+            transform: scale(1.1);
+            background: #f8f7ff;
+        }
+
+        .hud-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #f8f9fa;
+            padding: 10px 14px;
+            border-radius: 16px;
+            margin-bottom: 12px;
+            margin-top: 25px; /* Give space for top utility buttons */
+            border: 2px solid #e9ecef;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .hud-item {
+            font-weight: bold;
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .level-badge {
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            color: white;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.85rem;
+            font-weight: bold;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+        }
+
+        .hearts-container {
+            color: var(--danger);
+            font-size: 1.3rem;
+            display: flex;
+            gap: 3px;
+        }
+
+        .heart {
+            display: inline-block;
+            transition: transform 0.2s ease;
+        }
+
+        .heart.shake {
+            animation: heartShatter 0.6s ease-in-out forwards;
+        }
+
+        @keyframes heartShatter {
+            0% { transform: scale(1) rotate(0deg); }
+            20% { transform: scale(1.4) rotate(-20deg); color: #ff7675; }
+            40% { transform: scale(1.2) rotate(20deg); color: #e17055; }
+            60% { transform: scale(1.5) rotate(-30deg); opacity: 0.9; filter: drop-shadow(0 0 8px rgba(214, 48, 49, 0.8)); }
+            80% { transform: scale(0.6) rotate(45deg); opacity: 0.4; }
+            100% { transform: scale(0) rotate(90deg); opacity: 0; }
+        }
+
+        .timer-bar-container {
+            width: 100%;
+            height: 12px;
+            background: #dfe6e9;
+            border-radius: 6px;
+            overflow: hidden;
+            margin-bottom: 15px;
+        }
+
+        .timer-bar {
+            height: 100%;
+            width: 100%;
+            background: var(--accent);
+            transition: width 1s linear, background-color 0.3s ease;
+        }
+
+        .screen {
+            display: none;
+            animation: fadeIn 0.4s ease-in-out;
+        }
+
+        .screen.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .header-title {
+            text-align: center;
+            color: var(--primary);
+            font-size: 2.2rem;
+            margin-bottom: 5px;
+            margin-top: 10px;
+            text-shadow: 2px 2px 0px #e0e0e0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: var(--secondary);
+            font-weight: bold;
+            font-size: 1.1rem;
+            margin-bottom: 15px;
+        }
+
+        /* Input Player Name Box */
+        .player-input-card {
+            background: #ffffff;
+            border: 2px solid var(--primary-light);
+            border-radius: 16px;
+            padding: 15px;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .player-input-card label {
+            display: block;
+            font-weight: bold;
+            color: var(--primary);
+            margin-bottom: 6px;
+        }
+
+        .player-input-card input {
+            width: 80%;
+            padding: 10px 14px;
+            border: 2px solid #dfe6e9;
+            border-radius: 12px;
+            font-size: 1.05rem;
+            text-align: center;
+            outline: none;
+            transition: border 0.2s;
+        }
+
+        .player-input-card input:focus {
+            border-color: var(--primary);
+        }
+
+        /* Buttons */
+        .btn {
+            display: block;
+            width: 100%;
+            padding: 12px 16px;
+            margin: 8px 0;
+            border: none;
+            border-radius: 16px;
+            font-size: 1.05rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 5px 0px rgba(0,0,0,0.1);
+            text-align: center;
+            text-decoration: none;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+            box-shadow: 0 4px 0px rgba(0,0,0,0.2);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            filter: brightness(1.05);
+        }
+
+        .btn-secondary {
+            background: var(--secondary);
+            color: white;
+            box-shadow: 0 4px 0px rgba(0,0,0,0.2);
+        }
+
+        .btn-reward {
+            background: linear-gradient(135deg, #f1c40f, #f39c12);
+            color: white;
+            box-shadow: 0 4px 0px #d35400;
+        }
+
+        .btn-mode {
+            background: linear-gradient(135deg, #00b894, #00bec4);
+            color: white;
+            box-shadow: 0 4px 0px #008d75;
+        }
+
+        .frog-pond-container {
+            position: relative;
+            width: 100%;
+            height: 290px;
+            background: linear-gradient(180deg, #b2ebd9 0%, #80deea 100%);
+            border: 4px solid var(--primary-light);
+            border-radius: 24px;
+            overflow: hidden;
+            margin-bottom: 15px;
+            box-shadow: inset 0 6px 15px rgba(0,0,0,0.1);
+        }
+
+        .lily-pad {
+            position: absolute;
+            width: 44%;
+            height: 95px;
+            background: linear-gradient(135deg, #2ecc71, #27ae60);
+            border: 3px solid #1e8449;
+            border-radius: 50% 50% 45% 45%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 10px;
+            color: white;
+            font-weight: bold;
+            font-size: 0.95rem;
+            text-align: center;
+            cursor: pointer;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.18), inset 0 3px 6px rgba(255,255,255,0.3);
+            transition: transform 0.2s, background-color 0.3s;
+            user-select: none;
+        }
+
+        .lily-pad:hover {
+            transform: scale(1.05);
+            background: linear-gradient(135deg, #27ae60, #219150);
+        }
+
+        .lily-pad.correct {
+            background: linear-gradient(135deg, #00b894, #008f72) !important;
+            border-color: #006b52 !important;
+        }
+
+        .lily-pad.wrong {
+            background: linear-gradient(135deg, #ff7675, #d63031) !important;
+            border-color: #b22222 !important;
+        }
+
+        .lily-pad.disabled {
+            pointer-events: none;
+            opacity: 0.5;
+        }
+
+        /* Redesigned Cute Vector Frog Character */
+        .frog-character {
+            position: absolute;
+            width: 65px;
+            height: 55px;
+            background: radial-gradient(circle at 30% 30%, #55efc4, #00b894);
+            border: 3.5px solid #008f72;
+            border-radius: 50% 50% 45% 45%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.25), inset 0 3px 6px rgba(255,255,255,0.6);
+            transition: left 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), top 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), transform 0.3s ease;
+            pointer-events: none;
+            bottom: 12px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        /* Custom Theme Arena Styles */
+        .theme-farm-bg { background: linear-gradient(180deg, #ffeaa7 0%, #fab1a0 100%) !important; border-color: #e17055 !important; }
+        .theme-cat-bg { background: linear-gradient(180deg, #fd79a8 0%, #a29bfe 100%) !important; border-color: #6c5ce7 !important; }
+        .theme-space-bg { background: linear-gradient(180deg, #2d3436 0%, #0984e3 100%) !important; border-color: #74b9ff !important; }
+
+        .pad-farm-style { background: linear-gradient(135deg, #d63031, #e17055) !important; border-color: #b22222 !important; border-radius: 20px !important; }
+        .pad-cat-style { background: linear-gradient(135deg, #fd79a8, #e84393) !important; border-color: #c71585 !important; border-radius: 25px !important; }
+        .pad-space-style { background: linear-gradient(135deg, #0984e3, #74b9ff) !important; border-color: #0056b3 !important; border-radius: 50% !important; }
+
+        /* Frog Eyes */
+        .frog-character::before, .frog-character::after {
+            content: '';
+            position: absolute;
+            top: -12px;
+            width: 22px;
+            height: 22px;
+            background: radial-gradient(circle at 35% 35%, #ffffff 35%, #2d3436 36%, #2d3436 70%, #000000 100%);
+            border: 3px solid #008f72;
+            border-radius: 50%;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.15);
+        }
+
+        .frog-character::before { left: 4px; }
+        .frog-character::after { right: 4px; }
+
+        /* Cute Frog Cheeks & Mouth */
+        .frog-face {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .frog-cheeks {
+            position: absolute;
+            width: 75%;
+            display: flex;
+            justify-content: space-between;
+            top: 22px;
+        }
+
+        .frog-cheek {
+            width: 10px;
+            height: 6px;
+            background: #ff7675;
+            border-radius: 50%;
+            opacity: 0.85;
+        }
+
+        .frog-smile {
+            position: absolute;
+            width: 14px;
+            height: 7px;
+            border-bottom: 3px solid #005e4a;
+            border-radius: 0 0 12px 12px;
+            top: 24px;
+        }
+
+        .frog-character.jumping {
+            animation: frogJumpArc 0.4s ease-in-out;
+        }
+
+        @keyframes frogJumpArc {
+            0% { transform: scale(1) translateY(0); }
+            50% { transform: scale(1.35) translateY(-30px); }
+            100% { transform: scale(1) translateY(0); }
+        }
+
+        /* Question & Standard Options */
+        .question-number {
+            color: var(--primary);
+            font-size: 0.95rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+        }
+
+        .question-text {
+            font-size: 1.1rem;
+            color: var(--text-dark);
+            margin-bottom: 15px;
+            line-height: 1.4;
+            font-weight: 600;
+        }
+
+        .options-grid {
+            display: grid;
+            gap: 10px;
+        }
+
+        .option-btn {
+            background: #ffffff;
+            border: 2px solid #dfe6e9;
+            padding: 12px 15px;
+            border-radius: 14px;
+            text-align: left;
+            font-size: 0.95rem;
+            color: var(--text-dark);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .option-btn:hover {
+            border-color: var(--primary-light);
+            background: #f8f7ff;
+            transform: translateX(3px);
+        }
+
+        .option-btn.correct {
+            background: #e6fffa !important;
+            border-color: #00b894 !important;
+            color: #006b52 !important;
+            font-weight: bold;
+        }
+
+        .option-btn.wrong {
+            background: #ffe6e6 !important;
+            border-color: var(--danger) !important;
+            color: #d63031 !important;
+            font-weight: bold;
+        }
+
+        .option-btn.disabled {
+            pointer-events: none;
+        }
+
+        .explanation-box {
+            display: none;
+            margin-top: 12px;
+            padding: 12px;
+            border-radius: 12px;
+            font-size: 0.9rem;
+            line-height: 1.4;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .explanation-box.correct {
+            background: #e6fffa !important;
+            border: 2px solid #00b894 !important;
+            color: #006b52 !important;
+        }
+
+        .explanation-box.wrong {
+            background: #ffe6e6 !important;
+            border: 2px solid var(--danger) !important;
+            color: #d63031 !important;
+        }
+
+        .option-btn.wrong {
+            background: #ffe6e6 !important;
+            border-color: var(--danger) !important;
+            color: #900 !important;
+        }
+
+        .option-btn.disabled {
+            pointer-events: none;
+        }
+
+        .explanation-box {
+            display: none;
+            margin-top: 12px;
+            padding: 12px;
+            border-radius: 12px;
+            font-size: 0.9rem;
+            line-height: 1.4;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .explanation-box.correct {
+            background: #e6fffa;
+            border: 1px solid var(--accent);
+            color: #006b52;
+        }
+
+        .explanation-box.wrong {
+            background: #ffe6e6;
+            border: 1px solid var(--danger);
+            color: #900;
+        }
+
+        .modal-overlay {
+            display: none;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.65);
+            backdrop-filter: blur(4px);
+            z-index: 50;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            color: white;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal-box {
+            background: white;
+            color: var(--text-dark);
+            padding: 22px;
+            border-radius: 20px;
+            border: 4px solid var(--gold);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+            max-width: 90%;
+            animation: bounceIn 0.4s ease;
+        }
+
+        @keyframes bounceIn {
+            0% { transform: scale(0.8); opacity: 0; }
+            60% { transform: scale(1.05); opacity: 1; }
+            100% { transform: scale(1); }
+        }
+
+        .powerup-cards-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-top: 12px;
+        }
+
+        .powerup-card {
+            background: #f8f9fe;
+            border: 2px solid var(--primary-light);
+            border-radius: 14px;
+            padding: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .powerup-card:hover {
+            transform: translateY(-3px);
+            border-color: var(--primary);
+            background: #f0edff;
+        }
+
+        .powerup-card .icon {
+            font-size: 2rem;
+        }
+
+        .powerup-card .name {
+            font-weight: bold;
+            font-size: 0.85rem;
+            color: var(--primary);
+        }
+
+        .powerup-card .desc {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        /* Leaderboard Table */
+        .leaderboard-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 12px 0;
+            font-size: 0.9rem;
+        }
+
+        .leaderboard-table th, .leaderboard-table td {
+            padding: 8px 10px;
+            text-align: center;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .leaderboard-table th {
+            background: var(--primary-light);
+            color: white;
+            border-radius: 6px;
+        }
+
+        /* Material Layout Styles */
+        .materi-layout {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 12px;
+            text-align: left;
+            min-height: 280px;
+        }
+
+        .materi-sidebar {
+            width: 32%;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            max-height: 320px;
+            overflow-y: auto;
+            padding-right: 4px;
+        }
+
+        .materi-tab-btn {
+            background: #f8f9fe;
+            border: 2px solid #dfe6e9;
+            padding: 10px 8px;
+            border-radius: 12px;
+            font-size: 0.82rem;
+            font-weight: bold;
+            color: var(--text-dark);
+            cursor: pointer;
+            text-align: left;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .materi-tab-btn:hover {
+            border-color: var(--primary-light);
+            background: #ffffff;
+        }
+
+        .materi-tab-btn.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+            box-shadow: 0 4px 10px rgba(108, 92, 231, 0.25);
+        }
+
+        .materi-content-box {
+            width: 68%;
+            background: #ffffff;
+            border: 2px solid var(--primary-light);
+            border-radius: 16px;
+            padding: 16px;
+            max-height: 320px;
+            overflow-y: auto;
+            box-shadow: inset 0 2px 6px rgba(0,0,0,0.02);
+        }
+
+        .materi-content-box h3 {
+            color: var(--primary);
+            font-size: 1.05rem;
+            margin-bottom: 8px;
+            border-bottom: 2px solid #f0edff;
+            padding-bottom: 6px;
+        }
+
+        .materi-content-box p {
+            font-size: 0.88rem;
+            line-height: 1.5;
+            color: var(--text-dark);
+        }
+
+        /* Particle Canvas Overlay */
+        #vfx-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 40;
+        }
+
+        /* Group Card & Footer */
+        .group-card {
+            background: #f8f9fe;
+            border: 2px dashed var(--primary-light);
+            border-radius: 16px;
+            padding: 12px;
+            margin: 12px 0;
+            text-align: center;
+        }
+
+        .member-badge {
+            background: #ffffff;
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            margin: 2px;
+            border: 1px solid #e0e0e0;
+        }
+
+        /* Skin Selector Bar */
+        .skin-selector {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .skin-btn {
+            background: #ffffff;
+            border: 2px solid var(--primary-light);
+            border-radius: 12px;
+            padding: 6px 10px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .skin-btn.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        /* Review Modal & Achievement List */
+        .review-card {
+            background: #ffffff;
+            border: 2px solid #dfe6e9;
+            border-radius: 12px;
+            padding: 10px 14px;
+            margin-bottom: 8px;
+            text-align: left;
+            font-size: 0.85rem;
+        }
+
+        .review-card.correct-card { border-left: 5px solid #00b894; }
+        .review-card.wrong-card { border-left: 5px solid var(--danger); }
+
+        .combo-badge {
+            background: linear-gradient(135deg, #ff7675, #e84393);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            display: none;
+            animation: bounceIn 0.3s ease;
+        }
+
+        footer {
+            margin-top: 15px;
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.8rem;
+        }
+
+        @media (max-width: 480px) {
+            .game-container { padding: 16px; }
+            .header-title { font-size: 1.7rem; }
+            .frog-pond-container { height: 260px; }
+            .lily-pad { font-size: 0.8rem; padding: 6px; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Main Container -->
+    <div class="game-container">
+        <!-- Visual Effects Particle Canvas -->
+        <canvas id="vfx-canvas"></canvas>
+
+        <!-- Top Right Utilities (Sound & Theme Toggle) -->
+        <div class="top-utilities">
+            <button class="icon-btn" onclick="cycleTheme()" title="Ubah Tema Warna">🎨</button>
+            <button id="music-toggle" class="icon-btn" onclick="toggleMusic()" title="Aktifkan/Matikan Musik Latar">🎵</button>
+            <button id="sound-toggle" class="icon-btn" onclick="toggleSound()" title="Aktifkan/Matikan Suara">🔊</button>
+        </div>
+
+        <!-- 1. HOME MENU SCREEN -->
+        <div id="screen-menu" class="screen active">
+            <h1 class="header-title">🌐 IP Master 🎮</h1>
+            <p class="subtitle">Game Edukasi Jaringan Komputer Interaktif</p>
+
+            <div class="player-input-card">
+                <label for="player-name">👤 Nama Pemain:</label>
+                <input type="text" id="player-name" placeholder="Masukkan Namamu..." maxlength="15" value="Pemain1">
+            </div>
+
+            <button class="btn btn-primary" style="font-size: 1.15rem; padding: 14px; background: linear-gradient(135deg, var(--primary), #a29bfe);" onclick="openModeSelectScreen()">🚀 Mulai Bermain</button>
+            <button class="btn btn-reward" style="background: linear-gradient(135deg, #00b894, #0984e3);" onclick="showScreen('screen-materi')">📚 Fitur Materi (Belajar IP)</button>
+            <button class="btn btn-reward" onclick="showScreen('screen-leaderboard')">🏆 Papan Peringkat (Leaderboard)</button>
+            <button class="btn btn-secondary" onclick="showScreen('screen-rules')">📖 Cara Bermain & Power-Up</button>
+
+            <!-- Group Info -->
+            <div class="group-card">
+                <div style="font-weight: bold; color: var(--primary);">👥 Kelompok 3 : Imut Lucu</div>
+                <div style="margin-top: 5px;">
+                    <span class="member-badge">Radit</span><span class="member-badge">Kia</span>
+                    <span class="member-badge">Fira</span><span class="member-badge">Anas</span>
+                    <span class="member-badge">Richard</span><span class="member-badge">Ronal</span>
+                    <span class="member-badge">Risang</span><span class="member-badge">Rasyid</span>
+                    <span class="member-badge">Ilham</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- MODAL OVERLAY KOSTUMISASI -->
+        <div id="customization-modal" class="modal-overlay">
+            <div class="modal-box" style="max-width: 500px; width: 90%;">
+                <h2 style="color: var(--primary); font-size: 1.5rem;">🎭 Menu Kostumisasi</h2>
+                <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 12px;">Atur Tampilan Karakter & Aksesoris!</p>
+
+                <div class="player-input-card" style="margin-bottom: 15px; text-align: left;">
+                    <!-- Character & Theme Customization Selector -->
+                    <label style="display: block; font-size: 0.9rem; margin-bottom: 8px; font-weight: bold; color: var(--primary);">🏞️ Pilih Karakter & Arena:</label>
+                    <div class="skin-selector" style="flex-wrap: wrap;">
+                        <button class="skin-btn active" id="skin-frog" onclick="selectGameTheme('frog')">🐸 Katak</button>
+                        <button class="skin-btn" id="skin-chicken" onclick="selectGameTheme('chicken')">🐔 Ayam</button>
+                        <button class="skin-btn" id="skin-cat" onclick="selectGameTheme('cat')">🐱 Kucing</button>
+                        <button class="skin-btn" id="skin-space" onclick="selectGameTheme('space')">🚀 Astronaut</button>
+                    </div>
+
+                    <!-- Aksesoris Topi Selector -->
+                    <label style="margin-top: 15px; display: block; font-size: 0.9rem; margin-bottom: 8px; font-weight: bold; color: var(--primary);">👑 Pilih Aksesoris Tambahan:</label>
+                    <div class="skin-selector" style="flex-wrap: wrap;">
+                        <button class="skin-btn active" id="hat-none" onclick="selectFrogSkin('none')">Tanpa Aksesoris</button>
+                        <button class="skin-btn" id="hat-crown" onclick="selectFrogSkin('crown')">Mahkota 👑</button>
+                        <button class="skin-btn" id="hat-glasses" onclick="selectFrogSkin('glasses')">Kacamata 😎</button>
+                        <button class="skin-btn" id="hat-wizard" onclick="selectFrogSkin('wizard')">Pesulap 🧙‍♂️</button>
+                    </div>
+                </div>
+
+                <button class="btn btn-primary" onclick="closeCustomizationModal()">✅ Simpan & Tutup</button>
+            </div>
+        </div>
+
+        <!-- MODE SELECTION SCREEN -->
+        <div id="screen-select-mode" class="screen">
+            <h2 class="header-title" style="font-size: 1.6rem;">🎮 Pilih Mode Permainan</h2>
+            <p class="subtitle">Pilih cara bermain yang kamu sukai!</p>
+
+            <!-- Hardcore Mode Toggle Bar -->
+            <div id="hardcore-bar-card" style="background: #f8f9fa; border: 2px solid #dfe6e9; border-radius: 16px; padding: 12px 16px; margin: 15px 0; display: flex; align-items: center; justify-content: space-between; transition: all 0.3s ease;">
+                <div>
+                    <div style="font-weight: bold; color: var(--text-dark); font-size: 0.95rem; display: flex; align-items: center; gap: 6px;" id="hardcore-label-title">
+                        ⚪ Mode Hardcore (OFF)
+                    </div>
+                    <div style="font-size: 0.78rem; color: var(--text-muted); margin-top: 2px;">
+                        Tantangan ekstra! 1 Hati (❤️), waktu 10s per soal, +50% Poin Bonus!
+                    </div>
+                </div>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <span id="toggle-status-text" style="font-size: 0.85rem; font-weight: bold; color: #95a5a6;">MATI</span>
+                    <label style="position: relative; display: inline-block; width: 54px; height: 28px; flex-shrink: 0;">
+                        <input type="checkbox" id="hardcore-toggle" style="opacity: 0; width: 0; height: 0;" onchange="toggleHardcoreState(this.checked)">
+                        <span style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #b2bec3; transition: .3s; border-radius: 34px; box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);" id="toggle-slider"></span>
+                    </label>
+                </div>
+            </div>
+            <style>
+                #hardcore-toggle:checked + #toggle-slider { background-color: var(--danger) !important; }
+                #toggle-slider:before { position: absolute; content: ""; height: 20px; width: 20px; left: 4px; bottom: 4px; background-color: white; transition: .3s; border-radius: 50%; box-shadow: 0 2px 5px rgba(0,0,0,0.3); }
+                #hardcore-toggle:checked + #toggle-slider:before { transform: translateX(26px); }
+            </style>
+
+            <div style="display: grid; gap: 12px; margin: 20px 0;">
+                <div style="background: #f8f9fe; border: 2px solid var(--primary-light); border-radius: 16px; padding: 15px; cursor: pointer; transition: all 0.2s;" onclick="startSelectedMode('quiz')">
+                    <h3 style="color: var(--primary); font-size: 1.1rem; margin-bottom: 5px;">📝 Kuis Klasik</h3>
+                    <p style="font-size: 0.85rem; color: var(--text-muted);">Jawab pertanyaan pilihan ganda standar (A, B, C, D) dengan cepat dan tepat.</p>
+                </div>
+
+                <div style="background: #f8f9fe; border: 2px solid var(--accent); border-radius: 16px; padding: 15px; cursor: pointer; transition: all 0.2s;" onclick="startSelectedMode('frog')">
+                    <h3 style="color: var(--accent); font-size: 1.1rem; margin-bottom: 5px;" id="mode-interactive-title">🐸 Katak Melompat</h3>
+                    <p style="font-size: 0.85rem; color: var(--text-muted);" id="mode-interactive-desc">Bantu karakter melompat ke arena jawaban yang benar!</p>
+                </div>
+            </div>
+
+            <button class="btn btn-secondary" onclick="showScreen('screen-menu')">⬅️ Kembali ke Menu Utama</button>
+        </div>
+
+        <!-- 2. LEADERBOARD SCREEN -->
+        <div id="screen-leaderboard" class="screen">
+            <h2 class="header-title" style="font-size: 1.6rem;">🏆 Papan Peringkat</h2>
+            <p class="subtitle">Top Pemain IP Master</p>
+
+            <table class="leaderboard-table">
+                <thead>
+                    <tr>
+                        <th>Peringkat</th>
+                        <th>Nama</th>
+                        <th>Skor</th>
+                    </tr>
+                </thead>
+                <tbody id="leaderboard-body">
+                    <!-- Dynamically populated -->
+                </tbody>
+            </table>
+
+            <button class="btn btn-secondary" onclick="showScreen('screen-menu')">⬅️ Kembali ke Menu Utama</button>
+        </div>
+
+        <!-- FITUR MATERI (BELAJAR IP) SCREEN -->
+        <div id="screen-materi" class="screen">
+            <h2 class="header-title" style="font-size: 1.6rem;">📚 Materi Jaringan IP Address</h2>
+            <p class="subtitle">Pelajari konsep dasar sebelum bertanding!</p>
+
+            <div class="materi-layout">
+                <div class="materi-sidebar">
+                    <button class="materi-tab-btn active" id="tab-ipv4" onclick="showMateriTopic('ipv4')">🌐 Pengenalan IPv4</button>
+                    <button class="materi-tab-btn" id="tab-kelas" onclick="showMateriTopic('kelas')">🏷️ Kelas IP Address</button>
+                    <button class="materi-tab-btn" id="tab-subnet" onclick="showMateriTopic('subnet')">🧮 Subnetting & CIDR</button>
+                    <button class="materi-tab-btn" id="tab-ipv6" onclick="showMateriTopic('ipv6')">🚀 IPv6 & CLI Dasar</button>
+                </div>
+                <div class="materi-content-box" id="materi-content-display">
+                    <!-- Dynamic material content loaded here -->
+                </div>
+            </div>
+
+            <button class="btn btn-secondary" onclick="showScreen('screen-menu')">⬅️ Kembali ke Menu Utama</button>
+        </div>
+
+        <!-- 3. RULES & POWERUPS SCREEN -->
+        <div id="screen-rules" class="screen">
+            <h2 class="header-title" style="font-size: 1.5rem;">📖 Cara Bermain & Power-Up</h2>
+            <div style="font-size: 0.88rem; line-height: 1.5; color: var(--text-dark); background: #f8f9fa; padding: 14px; border-radius: 14px; margin-bottom: 15px; text-align: left;">
+                <p style="margin-bottom: 8px;"><strong>🎯 Aturan Dasar Game:</strong></p>
+                <ul style="margin-left: 18px; margin-bottom: 12px;">
+                    <li><strong>Skor:</strong> +10 poin untuk jawaban benar, bonus +5 jika dijawab dalam 10 detik pertama.</li>
+                    <li><strong>Nyawa:</strong> Kamu mulai dengan 3 Hati (❤️). Salah atau waktu habis = -1 Hati.</li>
+                    <li><strong>Timer:</strong> Setiap soal memiliki batas waktu 20 detik.</li>
+                    <li><strong>Level:</strong> Naik level otomatis setiap 5 soal (Mudah ➔ Sedang ➔ Sulit ➔ Expert).</li>
+                </ul>
+
+                <p style="margin-bottom: 8px;"><strong>🎮 Mode Permainan:</strong></p>
+                <ul style="margin-left: 18px; margin-bottom: 12px;">
+                    <li><strong>📝 Kuis Klasik:</strong> Pilih 1 dari 4 pilihan jawaban (A-D).</li>
+                    <li><strong>🐸 Katak Melompat:</strong> Klik teratai tempat jawaban benar untuk melompatkan katak!</li>
+                </ul>
+
+                <p style="margin-bottom: 8px;"><strong>⚡ Power-Up Bonus Naik Level:</strong></p>
+                <ul style="margin-left: 18px;">
+                    <li>❤️ <strong>Ekstra Nyawa:</strong> Memulihkan +1 Hati.</li>
+                    <li>⏰ <strong>Waktu Tambahan:</strong> Menambah batas waktu +10 detik per soal di level tersebut.</li>
+                    <li>🌟 <strong>Double Score:</strong> Mendapatkan poin berlipat 2x lipat.</li>
+                    <li>⚡ <strong>50:50:</strong> Menghilangkan 2 pilihan jawaban yang salah.</li>
+                </ul>
+            </div>
+            <button class="btn btn-secondary" onclick="showScreen('screen-menu')">⬅️ Kembali ke Menu Utama</button>
+        </div>
+
+        <!-- 4. GAMEPLAY SCREEN -->
+        <div id="screen-game" class="screen">
+            <!-- Level Up Modal Overlay -->
+            <div id="level-up-modal" class="modal-overlay">
+                <div class="modal-box">
+                    <div style="font-size: 2.8rem;">⚡</div>
+                    <h2 style="color: var(--primary);" id="lvl-modal-title">NAIK LEVEL!</h2>
+                    <p style="font-weight: bold; color: var(--secondary);" id="lvl-modal-subtitle">Level 2</p>
+                    <p style="font-size: 0.85rem; color: var(--text-muted); margin: 8px 0;" id="lvl-modal-desc">Pilih 1 Power-Up Bonus untuk level ini:</p>
+
+                    <div class="powerup-cards-grid" id="powerup-cards">
+                        <!-- Dynamically filled powerups -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- HUD Top Bar -->
+            <div class="hud-container">
+                <div class="hud-item">
+                    <span id="hud-level-badge" class="level-badge">Level 1</span>
+                    <span id="hud-combo-badge" class="combo-badge">2x Combo! 🔥</span>
+                </div>
+                <div class="hud-item">
+                    ⭐ Skor: <span id="hud-score" style="color: var(--primary);">0</span>
+                </div>
+                <div class="hud-item">
+                    <div id="hud-hearts" class="hearts-container">❤️❤️❤️</div>
+                </div>
+            </div>
+
+            <!-- Timer Bar -->
+            <div class="timer-bar-container">
+                <div id="timer-bar" class="timer-bar"></div>
+            </div>
+
+            <div class="question-number" id="question-number">Soal 1/20</div>
+            <div class="question-text" id="question-text">Pertanyaan...</div>
+
+            <!-- MODE 1: Standard Options -->
+            <div class="options-grid" id="options-container"></div>
+            <!-- MODE 2: Interactive Jump Pond -->
+            <div id="frog-pond-container" class="frog-pond-container" style="display: none;">
+                <div class="frog-character" id="frog-sprite">
+                    <div class="frog-face" id="frog-face-element">
+                        <div class="frog-cheeks">
+                            <div class="frog-cheek"></div>
+                            <div class="frog-cheek"></div>
+                        </div>
+                        <div class="frog-smile"></div>
+                    </div>
+                </div>
+                <div class="lily-pad" id="pad-0" style="top: 15px; left: 4%;" onclick="checkFrogAnswer(0)"></div>
+                <div class="lily-pad" id="pad-1" style="top: 15px; right: 4%;" onclick="checkFrogAnswer(1)"></div>
+                <div class="lily-pad" id="pad-2" style="top: 135px; left: 4%;" onclick="checkFrogAnswer(2)"></div>
+                <div class="lily-pad" id="pad-3" style="top: 135px; right: 4%;" onclick="checkFrogAnswer(3)"></div>
+            </div>
+
+            <div id="explanation-box" class="explanation-box"></div>
+            <button id="btn-next" class="btn btn-primary" style="display: none; margin-top: 12px;" onclick="nextQuestion()">Lanjut Soal Berikutnya ➡️</button>
+        </div>
+
+        <!-- 5. END GAME SCREEN -->
+        <div id="screen-end" class="screen">
+            <h1 class="header-title" id="end-title">Game Selesai! 🎉</h1>
+            <p id="end-subtitle" class="subtitle">Hasil Perjuanganmu</p>
+
+            <div style="background: #f8f9fa; padding: 15px; border-radius: 16px; text-align: center; margin: 12px 0; border: 2px solid #e9ecef;">
+                <div>Pemain: <strong id="end-player-name" style="color: var(--primary);">Pemain1</strong></div>
+                <div style="font-size: 1.3rem; font-weight: bold; margin: 5px 0;">Skor Akhir: <span id="end-score" style="color: var(--accent);">0</span></div>
+                <div>Jawaban Benar: <span id="end-correct" style="color: var(--accent);">0</span> | Salah: <span id="end-wrong" style="color: var(--danger);">0</span></div>
+                
+                <!-- Unlocked Achievements Badges -->
+                <div style="margin-top: 10px; font-weight: bold; font-size: 0.85rem; color: var(--primary);">🎖️ Lencana Pencapaian:</div>
+                <div id="unlocked-achievements" style="display: flex; gap: 6px; justify-content: center; flex-wrap: wrap; margin-top: 6px;"></div>
+            </div>
+
+            <!-- Review Questions Modal / Toggle Button -->
+            <button class="btn btn-reward" style="background: linear-gradient(135deg, #6c5ce7, #00b894);" onclick="toggleReviewSection()">📜 Lihat Evaluasi Pembahasan Soal</button>
+            
+            <div id="review-section" style="display: none; max-height: 250px; overflow-y: auto; margin-bottom: 12px;"></div>
+
+            <button class="btn btn-primary" onclick="startGame()">🔄 Main Lagi</button>
+            <button class="btn btn-secondary" onclick="showScreen('screen-menu')">🏠 Menu Utama</button>
+        </div>
+    </div>
+
+    <footer>
+        <p><strong>Kelompok 3 : Imut Lucu</strong> | Radit, Kia, Fira, Anas, Richard, Ronal, Risang, Rasyid, Ilham</p>
+        <p style="font-size: 0.75rem; margin-top: 3px;">Game Edukasi IP Address Jaringan Komputer</p>
+    </footer>
+
+    <script>
+        /* GLOBAL GAME VARIABLES */
+        let timer = null;
+        let timeLeft = 20;
+        let baseTimeLimit = 20;
+        let score = 0;
+        let hearts = 3;
+        let currentIndex = 0;
+        let currentLevel = 1;
+        let correctCount = 0;
+        let wrongCount = 0;
+        let scoreMultiplier = 1;
+        let isHardcore = false;
+
+        /* AUDIO & STATE MANAGEMENT */
+        let playerName = "Pemain1";
+        let gameMode = "quiz"; // 'quiz' or 'frog'
+        let soundEnabled = true;
+        let musicEnabled = false;
+        let audioCtx = null;
+        let musicInterval = null;
+        let currentQuestions = [];
+        let hasActiveFiftyFifty = false;
+        let isDoubleScoreActive = false;
+
+        /* LEVEL INFO DATA */
+        const levelInfo = {
+            1: { name: "Level 1: Pemula (IPv4)", time: 20 },
+            2: { name: "Level 2: Menengah (Kelas IP)", time: 20 },
+            3: { name: "Level 3: Mahir (Subnetting)", time: 20 },
+            4: { name: "Level 4: Expert (IPv6 & CLI)", time: 20 }
+        };
+
+        /* QUESTIONS DATABASE */
+        const questionsByLevel = {
+            1: [
+                { q: "Apa kepanjangan dari IP dalam istilah jaringan?", options: ["Internet Protocol", "Internal Protocol", "Information Path", "Intranet Provider"], correct: 0, exp: "IP singkatan dari Internet Protocol, yaitu protokol standar yang mengurus pengalamatan data di jaringan." },
+                { q: "Berapa bit panjang alamat IPv4?", options: ["16 Bit", "32 Bit", "64 Bit", "128 Bit"], correct: 1, exp: "IPv4 terdiri dari 32 bit yang dibagi menjadi 4 oktet (masing-masing 8 bit)." },
+                { q: "Format penulisan IPv4 menggunakan desimal yang dipisahkan oleh tanda...", options: ["Titik (.)", "Titik Dua (:)", "Koma (,)", "Hubung (-)"], correct: 0, exp: "Penulisan IPv4 berupa Dotted Decimal Notation, contohnya 192.168.1.1." },
+                { q: "Manakah contoh alamat IPv4 yang valid?", options: ["192.168.1.1", "256.100.0.1", "10.0.0.300", "192.168.1"], correct: 0, exp: "Tiap oktet IPv4 berada pada rentang 0 hingga 255. 192.168.1.1 adalah nilai yang valid." },
+                { q: "Satu oktet dalam IPv4 terdiri dari berapa bit?", options: ["4 Bit", "8 Bit", "16 Bit", "32 Bit"], correct: 1, exp: "Setiap oktet terdiri dari 8 bit (total 4 x 8 = 32 bit)." }
+            ],
+            2: [
+                { q: "Berapa range oktet pertama untuk IP Address Kelas A?", options: ["1 - 126", "128 - 191", "192 - 223", "224 - 239"], correct: 0, exp: "Kelas A memiliki range oktet pertama 1 - 126 (127 digunakan untuk loopback)." },
+                { q: "IP Address 192.168.10.1 termasuk dalam kelas...", options: ["Kelas A", "Kelas B", "Kelas C", "Kelas D"], correct: 2, exp: "Range oktet pertama Kelas C adalah 192 - 223." },
+                { q: "IP Address mana yang termasuk IP Private Kelas A?", options: ["10.0.0.1", "172.16.0.1", "192.168.1.1", "127.0.0.1"], correct: 0, exp: "Range IP Private Kelas A adalah 10.0.0.0 - 10.255.255.255." },
+                { q: "Subnet Mask default untuk IP Kelas C adalah...", options: ["255.0.0.0", "255.255.0.0", "255.255.255.0", "255.255.255.255"], correct: 2, exp: "Kelas C menggunakan 24 bit awal untuk Network ID (255.255.255.0)." },
+                { q: "Alamat 127.0.0.1 biasanya digunakan untuk...", options: ["Broadcast", "Loopback / Localhost", "Gateway", "DNS Server"], correct: 1, exp: "127.0.0.1 adalah alamat Loopback untuk menguji tumpukan protokol TCP/IP internal komputer." }
+            ],
+            3: [
+                { q: "Berapa jumlah host yang dapat digunakan pada prefix /24?", options: ["256 Host", "254 Host", "128 Host", "512 Host"], correct: 1, exp: "Total IP = 256. Dikurangi 2 (Network ID & Broadcast ID) = 254 host yang bisa dipakai." },
+                { q: "Notasi CIDR /28 sama dengan Subnet Mask...", options: ["255.255.255.240", "255.255.255.224", "255.255.255.192", "255.255.255.248"], correct: 0, exp: "/28 menyisakan 4 bit host (2^4 = 16), sehingga 256 - 16 = 240." },
+                { q: "Berapa Broadcast Address dari 192.168.1.0/24?", options: ["192.168.1.0", "192.168.1.1", "192.168.1.254", "192.168.1.255"], correct: 3, exp: "Pada subnet /24, alamat terakhir (255) digunakan sebagai Broadcast ID." },
+                { q: "Berapa Network ID dari IP 192.168.1.50/24?", options: ["192.168.1.0", "192.168.1.1", "192.168.1.255", "192.168.0.0"], correct: 0, exp: "Pada prefix /24, Network ID-nya adalah alamat paling awal yaitu 192.168.1.0." },
+                { q: "Subnetting dilakukan dengan cara mengambil bit dari bagian...", options: ["Host ID", "Network ID", "Broadcast ID", "Subnet ID"], correct: 0, exp: "Subnetting meminjam bit dari bagian Host ID untuk dijadikan Subnet ID." }
+            ],
+            4: [
+                { q: "Berapa bit panjang alamat IPv6?", options: ["32 Bit", "64 Bit", "128 Bit", "256 Bit"], correct: 2, exp: "IPv6 memiliki panjang alamat 128 bit yang ditulis dalam format Heksadesimal." },
+                { q: "Format penulisan IPv6 dipisahkan oleh tanda...", options: ["Titik (.)", "Titik Dua (:)", "Koma (,)", "Garis Miring (/)"], correct: 1, exp: "IPv6 menggunakan format Hexadecimal yang dipisahkan oleh tanda titik dua (:)." },
+                { q: "Perintah CLI untuk mengecek konektivitas jaringan adalah...", options: ["ipconfig", "ping", "tracert", "netstat"], correct: 1, exp: "Perintah 'ping' mengirimkan paket ICMP untuk mengecek koneksi antar host." },
+                { q: "Perintah CLI untuk melihat konfigurasi IP di Windows adalah...", options: ["ifconfig", "ipconfig", "ping", "nslookup"], correct: 1, exp: "'ipconfig' digunakan di Windows, sedangkan 'ifconfig' digunakan di Linux/macOS." },
+                { q: "Alamat IPv6 Loopback disingkat menjadi...", options: ["::1", "127.0.0.1", "0.0.0.0", "fe80::1"], correct: 0, exp: "Alamat loopback IPv6 disingkat menjadi ::1 (setara dengan 127.0.0.1 pada IPv4)." }
+            ]
+        };
+
+        /* WEB AUDIO SYNTHESIZER */
+        function initAudioOnFirstUserGesture() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+        }
+
+        function playSound(freq, duration = 0.1, type = 'sine') {
+            if (!soundEnabled) return;
+            try {
+                initAudioOnFirstUserGesture();
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = type;
+                osc.frequency.value = freq;
+                gain.gain.setValueAtTime(0.55, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start();
+                osc.stop(audioCtx.currentTime + duration);
+            } catch(e) {}
+        }
+
+        function playCorrectSFX() {
+            if (!soundEnabled) return;
+            playSound(523.25, 0.1, 'sine');
+            setTimeout(() => playSound(659.25, 0.15, 'sine'), 80);
+            setTimeout(() => playSound(783.99, 0.25, 'sine'), 160);
+        }
+
+        function playWrongSFX() {
+            if (!soundEnabled) return;
+            playSound(220, 0.15, 'sawtooth');
+            setTimeout(() => playSound(164.81, 0.3, 'sawtooth'), 120);
+        }
+
+        function playLevelUpSFX() {
+            if (!soundEnabled) return;
+            [440, 554.37, 659.25, 880].forEach((f, i) => {
+                setTimeout(() => playSound(f, 0.2, 'triangle'), i * 90);
+            });
+        }
+
+        function toggleSound() {
+            soundEnabled = !soundEnabled;
+            document.getElementById('sound-toggle').innerText = soundEnabled ? '🔊' : '🔇';
+        }
+
+        function toggleMusic() {
+            musicEnabled = !musicEnabled;
+            document.getElementById('music-toggle').innerText = musicEnabled ? '🎶' : '🎵';
+            if (musicEnabled) {
+                startBgMusic();
+            } else {
+                stopBgMusic();
+            }
+        }
+
+        function startBgMusic() {
+            if (musicInterval) clearInterval(musicInterval);
+            const notes = [261.63, 329.63, 392.00, 523.25, 392.00, 329.63];
+            let noteIdx = 0;
+            musicInterval = setInterval(() => {
+                if (musicEnabled) {
+                    playSound(notes[noteIdx], 0.2, 'sine');
+                    noteIdx = (noteIdx + 1) % notes.length;
+                }
+            }, 500);
+        }
+
+        function stopBgMusic() {
+            if (musicInterval) {
+                clearInterval(musicInterval);
+                musicInterval = null;
+            }
+        }
+
+        function cycleTheme() {
+            const themes = ['', 'theme-ocean', 'theme-matcha', 'theme-sunset'];
+            let current = themes.findIndex(t => t === document.body.className);
+            let next = (current + 1) % themes.length;
+            document.body.className = themes[next];
+            playSound(800, 0.05);
+        }
+
+        /* NEW FEATURES STATE */
+        let streakCount = 0;
+        let fastAnswerStreak = 0;
+        let userAnswersHistory = [];
+
+        function playCheerSFX() {
+            if (!soundEnabled) return;
+            [523.25, 659.25, 783.99, 1046.50].forEach((f, i) => {
+                setTimeout(() => playSound(f, 0.25, 'triangle'), i * 70);
+            });
+        }
+
+        function playSplashSFX() {
+            if (!soundEnabled) return;
+            playSound(150, 0.15, 'sawtooth');
+            setTimeout(() => playSound(300, 0.1, 'sine'), 50);
+        }
+
+        /* NAVIGATION & SCREEN CONTROLLER FUNCTIONS */
+        function showScreen(screenId) {
+            initAudioOnFirstUserGesture();
+            playSound(600, 0.05);
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            const target = document.getElementById(screenId);
+            if (target) {
+                target.classList.add('active');
+            }
+            if (screenId === 'screen-leaderboard') {
+                renderLeaderboard();
+            } else if (screenId === 'screen-materi') {
+                showMateriTopic('ipv4');
+            }
+        }
+
+        /* MATERI DATABASE & CONTROLLER */
+        const materiTopics = {
+            ipv4: {
+                title: "🌐 Pengenalan IPv4",
+                text: "<p><strong>Internet Protocol Version 4 (IPv4)</strong> adalah protokol pengalamatan 32-bit yang membagi alamat IP menjadi 4 oktet (setiap oktet bernilai 8 bit, dari 0-255) yang dipisahkan oleh tanda titik (Dotted Decimal Notation).</p><br><p><strong>Contoh Format:</strong> <code>192.168.1.1</code></p><p>Setiap perangkat di dalam jaringan lokal maupun internet memerlukan IP Address agar dapat berkomunikasi dan saling mengirimkan data.</p>"
+            },
+            kelas: {
+                title: "🏷️ Pembagian Kelas IP Address",
+                text: "<p>IPv4 dibagi menjadi beberapa kelas utama berdasarkan oktet pertama:</p><ul><li><strong>Kelas A:</strong> 1.0.0.0 – 126.255.255.255 (Jaringan Sangat Besar)</li><li><strong>Kelas B:</strong> 128.0.0.0 – 191.255.255.255 (Jaringan Menengah)</li><li><strong>Kelas C:</strong> 192.0.0.0 – 223.255.255.255 (Jaringan Kecil/Lokal)</li><li><strong>Kelas D:</strong> Multicast (224-239)</li><li><strong>Kelas E:</strong> Eksperimental (240-255)</li></ul><br><p><em>Catatan: Alamat <code>127.0.0.1</code> khusus digunakan untuk Loopback/Localhost.</em></p>"
+            },
+            subnet: {
+                title: "🧮 Subnetting & Notasi CIDR",
+                text: "<p><strong>Subnetting</strong> adalah teknik membagi satu jaringan fisik besar menjadi beberapa sub-jaringan yang lebih kecil (subnet) untuk menghemat alokasi IP Address dan meningkatkan efisiensi.</p><br><p><strong>Notasi CIDR:</strong> Dituliskan dengan tanda <code>/</code> diikuti jumlah bit network ID.</p><ul><li><code>/24</code> = Subnet Mask 255.255.255.0 (Total 256 IP, 254 Host Usable)</li><li><code>/28</code> = Subnet Mask 255.255.255.240 (Total 16 IP, 14 Host Usable)</li></ul><p><em>Rumus Host Usable: 2<sup>(bit host)</sup> - 2 (dikurangi Network ID & Broadcast ID).</em></p>"
+            },
+            ipv6: {
+                title: "🚀 IPv6 & Perintah CLI Dasar",
+                text: "<p><strong>IPv6:</strong> Pengalamatan 128-bit dalam format Heksadesimal dipisahkan tanda titik dua (<code>:</code>) untuk mengatasi kehabisan stok IPv4.</p><br><p><strong>Contoh IPv6:</strong> <code>fe80::1</code></p><hr style='margin:10px 0; border:1px dashed #dfe6e9;'><p><strong>Perintah CLI Jaringan Dasar:</strong></p><ul><li><code>ping [ip/host]</code>: Mengecek konektivitas antarnode/server.</li><li><code>ipconfig</code> (Windows) / <code>ifconfig</code> (Linux/macOS): Melihat informasi konfigurasi IP komputer.</li><li><code>tracert</code>: Merekam rute perjalanan paket data.</li></ul>"
+            }
+        };
+
+        function showMateriTopic(topicKey) {
+            playSound(500, 0.05);
+            document.querySelectorAll('.materi-tab-btn').forEach(btn => btn.classList.remove('active'));
+            const activeTab = document.getElementById(`tab-${topicKey}`);
+            if (activeTab) activeTab.classList.add('active');
+
+            const contentDisplay = document.getElementById('materi-content-display');
+            if (contentDisplay && materiTopics[topicKey]) {
+                contentDisplay.innerHTML = `
+                    <h3>${materiTopics[topicKey].title}</h3>
+                    ${materiTopics[topicKey].text}
+                `;
+            }
+        }
+
+        function openModeSelectScreen() {
+            const nameInput = document.getElementById('player-name');
+            if (nameInput && nameInput.value.trim() !== '') {
+                playerName = nameInput.value.trim();
+            } else {
+                playerName = 'Pemain1';
+            }
+            showScreen('screen-select-mode');
+        }
+
+        function toggleHardcoreState(checked) {
+            isHardcore = checked;
+            playSound(checked ? 880 : 440, 0.1);
+
+            const barCard = document.getElementById('hardcore-bar-card');
+            const labelTitle = document.getElementById('hardcore-label-title');
+            const statusText = document.getElementById('toggle-status-text');
+
+            if (checked) {
+                barCard.style.background = '#ffe6e6';
+                barCard.style.borderColor = 'var(--danger)';
+                labelTitle.innerHTML = '🔥 Mode Hardcore (NYALA)';
+                labelTitle.style.color = 'var(--danger)';
+                statusText.innerText = 'AKTIF';
+                statusText.style.color = 'var(--danger)';
+            } else {
+                barCard.style.background = '#f8f9fa';
+                barCard.style.borderColor = '#dfe6e9';
+                labelTitle.innerHTML = '⚪ Mode Hardcore (OFF)';
+                labelTitle.style.color = 'var(--text-dark)';
+                statusText.innerText = 'MATI';
+                statusText.style.color = '#95a5a6';
+            }
+        }
+
+        function startSelectedMode(mode) {
+            gameMode = mode; // 'quiz' or 'frog'
+            startGame();
+        }
+
+        function startGame() {
+            initAudioOnFirstUserGesture();
+            playSound(700, 0.05);
+            if (musicEnabled && !musicInterval) startBgMusic();
+
+            currentQuestions = [];
+            for (let l = 1; l <= 4; l++) {
+                let shuffled = [...questionsByLevel[l]].sort(() => Math.random() - 0.5);
+                currentQuestions.push(...shuffled);
+            }
+            currentIndex = 0;
+            currentLevel = 1;
+            score = 0;
+            correctCount = 0;
+            wrongCount = 0;
+            streakCount = 0;
+            fastAnswerStreak = 0;
+            userAnswersHistory = [];
+            
+            // Hardcore vs Normal Mode Initial Rules
+            if (isHardcore) {
+                hearts = 1;
+                baseTimeLimit = 10;
+                scoreMultiplier = 1.5;
+            } else {
+                hearts = 3;
+                baseTimeLimit = 20;
+                scoreMultiplier = 1;
+            }
+
+            hasActiveFiftyFifty = false;
+            isDoubleScoreActive = false;
+
+            document.getElementById('options-container').style.display = gameMode === 'quiz' ? 'grid' : 'none';
+            document.getElementById('frog-pond-container').style.display = gameMode === 'frog' ? 'block' : 'none';
+
+            updateHUD();
+            showScreen('screen-game');
+            loadQuestion();
+        }
+
+        function updateHUD() {
+            document.getElementById('hud-score').innerText = Math.round(score);
+            let hardcoreBadge = isHardcore ? " 🔥 [HARDCORE]" : "";
+            document.getElementById('hud-level-badge').innerText = levelInfo[currentLevel].name + hardcoreBadge + (isDoubleScoreActive ? " (2x 🌟)" : "");
+            
+            const comboBadge = document.getElementById('hud-combo-badge');
+            if (streakCount >= 2) {
+                comboBadge.innerText = `${streakCount}x Combo! 🔥`;
+                comboBadge.style.display = 'inline-block';
+            } else {
+                comboBadge.style.display = 'none';
+            }
+
+            const heartsContainer = document.getElementById('hud-hearts');
+            let heartsHTML = '';
+            let maxHearts = isHardcore ? 1 : 3;
+            for (let i = 0; i < maxHearts; i++) {
+                if (i < hearts) {
+                    heartsHTML += `<span class="heart" id="heart-icon-${i}">❤️</span>`;
+                } else {
+                    heartsHTML += `<span class="heart" style="opacity: 0.3;">🖤</span>`;
+                }
+            }
+            heartsContainer.innerHTML = heartsHTML;
+        }
+
+        /* TIMER BAR UPDATE FUNCTION */
+        function updateTimerBar() {
+            const bar = document.getElementById('timer-bar');
+            if (!bar) return;
+            const pct = Math.max(0, (timeLeft / baseTimeLimit) * 100);
+            bar.style.width = pct + '%';
+            
+            if (pct > 50) {
+                bar.style.backgroundColor = '#00b894'; // Hijau
+            } else if (pct > 25) {
+                bar.style.backgroundColor = '#fdcb6e'; // Kuning
+            } else {
+                bar.style.backgroundColor = '#d63031'; // Merah
+            }
+        }
+
+        function loadQuestion() {
+            clearInterval(timer);
+            timeLeft = baseTimeLimit;
+            updateTimerBar();
+
+            let newLevel = Math.floor(currentIndex / 5) + 1;
+            if (newLevel > 4) newLevel = 4;
+
+            if (newLevel > currentLevel) {
+                currentLevel = newLevel;
+                updateHUD();
+                showPowerUpModal();
+                return;
+            }
+
+            currentLevel = newLevel;
+            updateHUD();
+
+            const currentQ = currentQuestions[currentIndex];
+            document.getElementById('question-number').innerText = `Soal ${currentIndex + 1} / ${currentQuestions.length}`;
+            document.getElementById('question-text').innerText = currentQ.q;
+
+            const explanationBox = document.getElementById('explanation-box');
+            explanationBox.style.display = 'none';
+            document.getElementById('btn-next').style.display = 'none';
+
+            if (gameMode === 'quiz') {
+                const optionsContainer = document.getElementById('options-container');
+                optionsContainer.innerHTML = '';
+                currentQ.options.forEach((opt, idx) => {
+                    const btn = document.createElement('button');
+                    btn.className = 'option-btn';
+                    btn.id = `opt-btn-${idx}`;
+                    btn.innerText = opt;
+                    btn.onclick = (e) => checkAnswer(idx, e);
+                    optionsContainer.appendChild(btn);
+                });
+
+                if (hasActiveFiftyFifty) {
+                    applyFiftyFifty();
+                    hasActiveFiftyFifty = false;
+                }
+            } else {
+                // Frog/Interactive Jump Mode Lily Pads
+                currentQ.options.forEach((opt, idx) => {
+                    const pad = document.getElementById(`pad-${idx}`);
+                    pad.innerText = '🍃 ' + opt;
+                    pad.className = 'lily-pad';
+                    pad.style.visibility = 'visible';
+                });
+
+                if (hasActiveFiftyFifty) {
+                    applyFiftyFifty();
+                    hasActiveFiftyFifty = false;
+                }
+
+                const frog = document.getElementById('frog-sprite');
+                frog.classList.remove('jumping');
+                frog.style.top = 'auto';
+                frog.style.bottom = '15px';
+                frog.style.left = '50%';
+                frog.style.transform = 'translateX(-50%)';
+            }
+
+            timer = setInterval(() => {
+                timeLeft--;
+                updateTimerBar();
+                if (timeLeft <= 0) {
+                    clearInterval(timer);
+                    handleTimeout();
+                }
+            }, 1000);
+        }
+
+        function checkAnswer(selectedIndex, event) {
+            clearInterval(timer);
+            const currentQ = currentQuestions[currentIndex];
+            const isCorrect = selectedIndex === currentQ.correct;
+
+            userAnswersHistory.push({
+                question: currentQ.q,
+                userAnswer: currentQ.options[selectedIndex],
+                correctAnswer: currentQ.options[currentQ.correct],
+                isCorrect: isCorrect,
+                explanation: currentQ.exp
+            });
+
+            document.querySelectorAll('.option-btn').forEach(btn => btn.classList.add('disabled'));
+
+            if (isCorrect) {
+                playCorrectSFX();
+                document.getElementById(`opt-btn-${selectedIndex}`).classList.add('correct');
+                processCorrectAnswer();
+            } else {
+                playWrongSFX();
+                document.getElementById(`opt-btn-${selectedIndex}`).classList.add('wrong');
+                document.getElementById(`opt-btn-${currentQ.correct}`).classList.add('correct');
+                processWrongAnswer();
+            }
+
+            showExplanation(isCorrect, currentQ.exp);
+        }
+
+        function checkFrogAnswer(selectedIndex) {
+            clearInterval(timer);
+            const currentQ = currentQuestions[currentIndex];
+            const isCorrect = selectedIndex === currentQ.correct;
+
+            userAnswersHistory.push({
+                question: currentQ.q,
+                userAnswer: currentQ.options[selectedIndex],
+                correctAnswer: currentQ.options[currentQ.correct],
+                isCorrect: isCorrect,
+                explanation: currentQ.exp
+            });
+
+            const targetPad = document.getElementById(`pad-${selectedIndex}`);
+            const frog = document.getElementById('frog-sprite');
+            frog.classList.add('jumping');
+            playSplashSFX();
+
+            if (selectedIndex === 0) { frog.style.left = '25%'; frog.style.top = '25px'; }
+            else if (selectedIndex === 1) { frog.style.left = '75%'; frog.style.top = '25px'; }
+            else if (selectedIndex === 2) { frog.style.left = '25%'; frog.style.top = '145px'; }
+            else if (selectedIndex === 3) { frog.style.left = '75%'; frog.style.top = '145px'; }
+
+            document.querySelectorAll('.lily-pad').forEach(pad => pad.classList.add('disabled'));
+
+            setTimeout(() => {
+                if (isCorrect) {
+                    playCorrectSFX();
+                    targetPad.classList.add('correct');
+                    processCorrectAnswer();
+                } else {
+                    playWrongSFX();
+                    targetPad.classList.add('wrong');
+                    document.getElementById(`pad-${currentQ.correct}`).classList.add('correct');
+                    processWrongAnswer();
+                }
+                showExplanation(isCorrect, currentQ.exp);
+            }, 300);
+        }
+
+        function processCorrectAnswer() {
+            correctCount++;
+            streakCount++;
+            if (timeLeft >= baseTimeLimit - 5) fastAnswerStreak++;
+
+            let points = (10 + (timeLeft > 10 ? 5 : 0)) * scoreMultiplier;
+            if (streakCount >= 2) points += streakCount * 2;
+            score += points;
+
+            updateHUD();
+        }
+
+        function processWrongAnswer() {
+            wrongCount++;
+            streakCount = 0;
+            fastAnswerStreak = 0;
+            deductHeart();
+        }
+
+        function deductHeart() {
+            hearts--;
+            const targetHeartIndex = hearts;
+            const heartEl = document.getElementById(`heart-icon-${targetHeartIndex}`);
+            if (heartEl) {
+                heartEl.classList.add('shake');
+            }
+            updateHUD();
+        }
+
+        function handleTimeout() {
+            playWrongSFX();
+            const currentQ = currentQuestions[currentIndex];
+
+            userAnswersHistory.push({
+                question: currentQ.q,
+                userAnswer: "Waktu Habis",
+                correctAnswer: currentQ.options[currentQ.correct],
+                isCorrect: false,
+                explanation: currentQ.exp
+            });
+
+            if (gameMode === 'quiz') {
+                document.querySelectorAll('.option-btn').forEach(btn => btn.classList.add('disabled'));
+                document.getElementById(`opt-btn-${currentQ.correct}`).classList.add('correct');
+            } else {
+                document.querySelectorAll('.lily-pad').forEach(pad => pad.classList.add('disabled'));
+                document.getElementById(`pad-${currentQ.correct}`).classList.add('correct');
+            }
+
+            processWrongAnswer();
+            showExplanation(false, "⏰ Waktu habis! " + currentQ.exp);
+        }
+
+        function showExplanation(isCorrect, text) {
+            const expBox = document.getElementById('explanation-box');
+            expBox.className = 'explanation-box ' + (isCorrect ? 'correct' : 'wrong');
+            expBox.innerHTML = `<strong>${isCorrect ? '✅ Benar!' : '❌ Salah!'}</strong> ${text}`;
+            expBox.style.display = 'block';
+
+            if (hearts <= 0) {
+                setTimeout(endGame, 1500);
+            } else {
+                document.getElementById('btn-next').style.display = 'block';
+            }
+        }
+
+        function nextQuestion() {
+            currentIndex++;
+            if (currentIndex >= currentQuestions.length) {
+                playCheerSFX();
+                endGame();
+            } else {
+                loadQuestion();
+            }
+        }
+
+        function applyFiftyFifty() {
+            const currentQ = currentQuestions[currentIndex];
+            let wrongIndices = [];
+            currentQ.options.forEach((_, idx) => {
+                if (idx !== currentQ.correct) wrongIndices.push(idx);
+            });
+            wrongIndices.sort(() => Math.random() - 0.5);
+            let toRemove = wrongIndices.slice(0, 2);
+
+            if (gameMode === 'quiz') {
+                toRemove.forEach(idx => {
+                    const btn = document.getElementById(`opt-btn-${idx}`);
+                    if (btn) {
+                        btn.innerText = '❌ [Dieliminasi 50:50]';
+                        btn.style.opacity = '0.4';
+                        btn.classList.add('disabled');
+                    }
+                });
+            } else {
+                toRemove.forEach(idx => {
+                    const pad = document.getElementById(`pad-${idx}`);
+                    if (pad) {
+                        pad.style.visibility = 'hidden';
+                    }
+                });
+            }
+        }
+
+        function showPowerUpModal() {
+            playLevelUpSFX();
+            const modal = document.getElementById('level-up-modal');
+            document.getElementById('lvl-modal-subtitle').innerText = levelInfo[currentLevel].name;
+
+            const grid = document.getElementById('powerup-cards');
+            grid.innerHTML = `
+                <div class="powerup-card" onclick="selectPowerUp('heart')">
+                    <div class="icon">❤️</div>
+                    <div class="name">+1 Nyawa</div>
+                    <div class="desc">Memulihkan 1 Hati</div>
+                </div>
+                <div class="powerup-card" onclick="selectPowerUp('time')">
+                    <div class="icon">⏰</div>
+                    <div class="name">+10s Waktu</div>
+                    <div class="desc">Batas waktu lebih longgar</div>
+                </div>
+                <div class="powerup-card" onclick="selectPowerUp('double')">
+                    <div class="icon">🌟</div>
+                    <div class="name">2x Poin</div>
+                    <div class="desc">Skor berlipat ganda</div>
+                </div>
+                <div class="powerup-card" onclick="selectPowerUp('5050')">
+                    <div class="icon">⚡</div>
+                    <div class="name">50 : 50</div>
+                    <div class="desc">Hapus 2 opsi salah</div>
+                </div>
+            `;
+
+            modal.classList.add('active');
+        }
+
+        function selectPowerUp(type) {
+            playSound(880, 0.15);
+            document.getElementById('level-up-modal').classList.remove('active');
+
+            if (type === 'heart') {
+                if (hearts < 3) hearts++;
+            } else if (type === 'time') {
+                baseTimeLimit = 30;
+            } else if (type === 'double') {
+                scoreMultiplier = 2;
+                isDoubleScoreActive = true;
+            } else if (type === '5050') {
+                hasActiveFiftyFifty = true;
+            }
+
+            updateHUD();
+            loadQuestion();
+        }
+
+        function endGame() {
+            clearInterval(timer);
+            document.getElementById('end-player-name').innerText = playerName;
+            document.getElementById('end-score').innerText = score;
+            document.getElementById('end-correct').innerText = correctCount;
+            document.getElementById('end-wrong').innerText = wrongCount;
+
+            // Badges calculation
+            const badgesContainer = document.getElementById('unlocked-achievements');
+            badgesContainer.innerHTML = '';
+
+            if (fastAnswerStreak >= 3) {
+                badgesContainer.innerHTML += `<span class="member-badge" style="background:#fff3bf; border-color:#f1c40f;">⚡ Bintang Kilat</span>`;
+            }
+            if (correctCount >= 10) {
+                badgesContainer.innerHTML += `<span class="member-badge" style="background:#ffdeeb; border-color:#e84393;">🔥 Streak Master</span>`;
+            }
+            if (hearts === 3) {
+                badgesContainer.innerHTML += `<span class="member-badge" style="background:#d3f9d8; border-color:#2ecc71;">🧠 IP Genius</span>`;
+            }
+            if (badgesContainer.innerHTML === '') {
+                badgesContainer.innerHTML = `<span style="font-size:0.8rem; color:var(--text-muted);">Selesaikan dengan lebih cepat untuk mendapatkan lencana!</span>`;
+            }
+
+            saveScore(playerName, score);
+            showScreen('screen-end');
+        }
+
+        function toggleReviewSection() {
+            const sec = document.getElementById('review-section');
+            if (sec.style.display === 'none') {
+                sec.style.display = 'block';
+                sec.innerHTML = '';
+                userAnswersHistory.forEach((item, idx) => {
+                    sec.innerHTML += `
+                        <div class="review-card ${item.isCorrect ? 'correct-card' : 'wrong-card'}">
+                            <div><strong>Soal ${idx + 1}:</strong> ${item.question}</div>
+                            <div>Jawabanmu: <span style="color:${item.isCorrect ? '#00b894' : 'var(--danger)'}; font-weight:bold;">${item.userAnswer}</span></div>
+                            ${!item.isCorrect ? `<div>Kunci Jawaban: <strong style="color:#00b894;">${item.correctAnswer}</strong></div>` : ''}
+                            <div style="font-size:0.75rem; color:var(--text-muted); margin-top:3px;">💡 ${item.explanation}</div>
+                        </div>
+                    `;
+                });
+            } else {
+                sec.style.display = 'none';
+            }
+        }
+
+        /* LEADERBOARD DATA */
+        let leaderboard = [
+            { name: "Risang", score: 999 },
+            { name: "Anas", score: 280 },
+            { name: "Richard", score: 250 },
+            { name: "Radit", score: 210 }
+        ];
+
+        function saveScore(name, sc) {
+            leaderboard.push({ name: name, score: sc });
+            leaderboard.sort((a, b) => b.score - a.score);
+            leaderboard = leaderboard.slice(0, 8);
+        }
+
+        function renderLeaderboard() {
+            const tbody = document.getElementById('leaderboard-body');
+            tbody.innerHTML = '';
+            leaderboard.forEach((entry, idx) => {
+                let badge = idx === 0 ? '🥇' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : `${idx + 1}`;
+                tbody.innerHTML += `
+                    <tr>
+                        <td>${badge}</td>
+                        <td><strong>${entry.name}</strong></td>
+                        <td style="color:var(--primary); font-weight:bold;">${entry.score}</td>
+                    </tr>
+                `;
+            });
+        }
+    </script>
+</body>
+</html>
